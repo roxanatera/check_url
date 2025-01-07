@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprobador de URLs</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+</head>
+<body class="bg-gray-100 text-gray-800">
+    <div class="container mx-auto p-4">
+        <h1 class="text-3xl font-bold text-center mb-6">Comprobador de URLs</h1>
+        <form id="urlForm" class="bg-white p-4 shadow rounded">
+            <label for="urls" class="block text-sm font-medium mb-2">Introduce una lista de URLs (separadas por comas):</label>
+            <textarea id="urls" name="urls" class="w-full border border-gray-300 p-2 rounded" rows="4"></textarea>
+            <button type="submit" class="mt-4 w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">Comprobar</button>
+        </form>
+
+        <!-- Resultados -->
+        <div id="results" class="mt-6 hidden">
+            <h2 class="text-xl font-bold mb-4">Resultados:</h2>
+            <ul id="result-list" class="list-disc pl-4"></ul>
+            
+            <!-- Botones de Exportación -->
+            <div id="export-buttons" class="mt-4 flex gap-4">
+                <button id="export-json" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 flex items-center">
+                    <span class="material-icons mr-2">description</span> Exportar como JSON
+                </button>
+                <button id="export-pdf" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 flex items-center">
+                    <span class="material-icons mr-2">picture_as_pdf</span> Exportar como PDF
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    const form = document.getElementById('urlForm');
+    const resultsDiv = document.getElementById('results');
+    const resultsList = document.getElementById('result-list');
+    const exportJsonBtn = document.getElementById('export-json');
+    const exportPdfBtn = document.getElementById('export-pdf');
+    let resultData = []; // Almacena los resultados
+
+    // Manejar envío del formulario
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const urls = document.getElementById('urls').value.split(',').map(url => url.trim());
+        const response = await fetch('/check', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ urls }),
+        });
+        resultData = await response.json();
+        resultsDiv.classList.remove('hidden'); // Mostrar los resultados
+        resultsList.innerHTML = resultData.map(result => `
+            <li>
+                <strong>${result.url}:</strong> 
+                <span class="${result.status_code === 200 ? 'text-green-500' : 'text-red-500'}">
+                    ${result.status_code === 200 ? '✅' : '❌'} ${result.status_code}
+                </span> 
+                (${result.response_time} ms)
+            </li>
+        `).join('');
+    });
+
+    // Exportar a JSON
+    exportJsonBtn.addEventListener('click', () => {
+        if (resultData.length === 0) {
+            alert('No hay resultados para exportar.');
+            return;
+        }
+        const blob = new Blob([JSON.stringify(resultData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'resultados.json';
+        a.click();
+        URL.revokeObjectURL(url);
+    });
+
+    // Exportar a PDF
+    exportPdfBtn.addEventListener('click', () => {
+        if (resultData.length === 0) {
+            alert('No hay resultados para exportar.');
+            return;
+        }
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        doc.setFontSize(16);
+        doc.text('Resultados del Comprobador de URLs', 10, 10);
+        doc.setFontSize(12);
+
+        resultData.forEach((result, index) => {
+            doc.text(`${index + 1}. URL: ${result.url}`, 10, 20 + index * 10);
+            doc.text(`   Estado: ${result.status_code}`, 10, 25 + index * 10);
+            doc.text(`   Tiempo de Respuesta: ${result.response_time} ms`, 10, 30 + index * 10);
+        });
+
+        doc.save('resultados.pdf');
+    });
+</script>
+</html>

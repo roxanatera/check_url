@@ -1,0 +1,8 @@
+# Ignorar archivos y carpetas innecesarios
+.git
+node_modules
+*.log
+*.env
+*.backup
+*.swp
+templates/*.backup
