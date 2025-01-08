@@ -9,16 +9,14 @@ import (
 
 
 func main() {
-    
-	engine := html.New("./templates", ".html")
+   
+	engine := html.New("templates", ".html") 
 
-    // Crear instancia de Fiber con el motor de plantillas
+
     app := fiber.New(fiber.Config{
-        Views: engine, // Configurar el motor de vistas
+        Views: engine, 
     })
 	
-
-    
     app.Get("/", func(c *fiber.Ctx) error {
         return c.Render("index", fiber.Map{
             "Title": "Comprobador de URLs",
