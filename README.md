@@ -49,3 +49,6 @@ Un proyecto desarrollado en **Go** con **Fiber** para comprobar el estado de una
    ```bash
    git clone https://github.com/tuusuario/url-checker.git
    cd url-checker
+
+##Ejemplo de salida
+
