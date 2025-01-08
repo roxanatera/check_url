@@ -50,5 +50,5 @@ Un proyecto desarrollado en **Go** con **Fiber** para comprobar el estado de una
    git clone https://github.com/tuusuario/url-checker.git
    cd url-checker
 
-##Ejemplo de salida
-
+## Ejemplo de salida
+![Descripción de la imagen](https://github.com/roxanatera/check_url/blob/main/checkerurl.jpg)
